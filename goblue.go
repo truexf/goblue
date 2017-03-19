@@ -75,6 +75,20 @@ func NewIpMap(fn string) *ipMap {
 	return ret
 }
 
+func (m *ipMap) save(fn string) {
+	m.Lock()
+	m.Unlock()
+	data := make([]string, 0, len(m.data))
+	for k, v := range m.data {
+		data = append(data, k+":"+v)
+	}
+	if len(data) > 0 {
+		if err := ioutil.WriteFile(fn, []byte(strings.Join(data, "\n")), 0666); err != nil {
+			glog.Errorf("save ipmap fail, %s\n", err.Error())
+		}
+	}
+}
+
 func (m *ipMap) getBackend(clientIp string) string {
 	m.Lock()
 	defer m.Unlock()
@@ -427,6 +441,15 @@ func (m *Proxy) StartListen() {
 		return
 	}
 	m.listener = lsn
+
+	if m.isIphash && m.ipHash != nil && m.cfg != nil {
+		go func() {
+			for {
+				<-time.After(time.Second * 15)
+				m.ipHash.save(m.cfg.Get("proxy", "iphash-file", "/tmp/goblue-iphash"))
+			}
+		}()
+	}
 	for {
 		conn, errAccept := lsn.AcceptTCP()
 		if errAccept != nil {
