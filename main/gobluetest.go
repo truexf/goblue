@@ -33,7 +33,7 @@ func (e *EventImplement) OnBackendDisconnected(backendAddr string) {
 //data transfer event,you can change the data and return new data
 //backendAddr remoteIp:port/localIp:port
 func (e *EventImplement) OnClientRecved(clientAddr string, data []byte) []byte {
-	fmt.Printf("client %s ,recved: %s\n",clientAddr,string(data))
+	fmt.Printf("client %s ,recved: %s\n", clientAddr, string(data))
 	return data
 }
 
@@ -44,7 +44,7 @@ func (e *EventImplement) OnClientSent(clientAddr string, bytes int) {
 
 //backendAddr remoteIp:port/localIp:port
 func (e *EventImplement) OnBackendRecved(backendAddr string, data []byte) []byte {
-	fmt.Printf("backend %s ,recved: %s\n",backendAddr,string(data))
+	fmt.Printf("backend %s ,recved: %s\n", backendAddr, string(data))
 	return data
 }
 

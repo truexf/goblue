@@ -237,6 +237,11 @@ func (m *Proxy) addLine(client *net.TCPConn, backend *net.TCPConn) {
 			linekeyReverse := backend.RemoteAddr().String() + "/" + backend.LocalAddr().String()
 			m.linesReverse[linekeyReverse] = ret
 			glog.V(3).Infof("add line, %s -> %s \n", linekey, linekeyReverse)
+
+			if m.isIphash && m.ipHash != nil {
+				ip, _ := goutil.SplitLR(client.RemoteAddr().String(), ":")
+				m.ipHash.insertMap(ip, backend.RemoteAddr().String())
+			}
 		}
 	}
 
@@ -389,7 +394,13 @@ func (m *Proxy) connectBackend(client *net.TCPConn, backendAddr string) bool {
 }
 
 func (m *Proxy) clean() {
-
+	lines := make([]*line, 0, len(m.lines))
+	for _, v := range m.lines {
+		lines = append(lines, v)
+	}
+	for _, v := range lines {
+		m.deleteLineByBackend(v.backendConn)
+	}
 }
 
 func (m *Proxy) StopListen() {
